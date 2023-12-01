@@ -883,8 +883,8 @@ namespace UnityEngine.Rendering.Universal
                 // We need final blit to resolve to screen
                 if (!cameraTargetResolved)
                 {
-                    Debug.Log($"[Strayed.URP]: {m_ActiveCameraColorAttachment.id} vs {RenderTargetHandle.GetCameraTarget(cameraData.xr).id}");
-                    Debug.Log("[Strayed.URP]: Camera Target Not Resolved!");
+                    //Debug.Log($"[Strayed.URP]: {m_ActiveCameraColorAttachment.id} vs {RenderTargetHandle.GetCameraTarget(cameraData.xr).id}");
+                    //Debug.Log("[Strayed.URP]: Camera Target Not Resolved!");
                     m_FinalBlitPass.Setup(cameraTargetDescriptor, sourceForFinalPass);
                     EnqueuePass(m_FinalBlitPass);
                 }
