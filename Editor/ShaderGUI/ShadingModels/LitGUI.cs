@@ -1,5 +1,10 @@
+using System;
+using System.IO;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
+using UnityEngine.Windows;
+using File = System.IO.File;
 
 namespace UnityEditor.Rendering.Universal.ShaderGUI
 {
@@ -19,6 +24,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
         public static class Styles
         {
+            public static GUIContent smaMap =
+                EditorGUIUtility.TrTextContent("SMA Map", "Smoothness, Metallic, AO combined map texture.");
+
             public static GUIContent workflowModeText = EditorGUIUtility.TrTextContent("Workflow Mode",
                 "Select a workflow that fits your textures. Choose between Metallic or Specular.");
 
@@ -30,6 +38,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             public static GUIContent smoothnessText = EditorGUIUtility.TrTextContent("Smoothness",
                 "Controls the spread of highlights and reflections on the surface.");
+
+            public static GUIContent metallicText = EditorGUIUtility.TrTextContent("Metallic",
+                "Controls the how metallic the surface is.");
 
             public static GUIContent smoothnessMapChannelText =
                 EditorGUIUtility.TrTextContent("Source",
@@ -47,6 +58,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             public static GUIContent occlusionText = EditorGUIUtility.TrTextContent("Occlusion Map",
                 "Sets an occlusion map to simulate shadowing from ambient lighting.");
+
+            public static GUIContent occlusionStrengthText = EditorGUIUtility.TrTextContent("Occlusion Strength",
+                "Occlusion map strength multiplier.");
 
             public static readonly string[] metallicSmoothnessChannelNames = { "Metallic Alpha", "Albedo Alpha" };
             public static readonly string[] specularSmoothnessChannelNames = { "Specular Alpha", "Albedo Alpha" };
@@ -84,6 +98,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             public MaterialProperty occlusionStrength;
             public MaterialProperty occlusionMap;
 
+            public MaterialProperty smaMap;
+
             // Advanced Props
             public MaterialProperty highlights;
             public MaterialProperty reflections;
@@ -98,9 +114,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 // Surface Option Props
                 workflowMode = BaseShaderGUI.FindProperty("_WorkflowMode", properties, false);
                 // Surface Input Props
-                metallic = BaseShaderGUI.FindProperty("_Metallic", properties);
+                metallic = BaseShaderGUI.FindProperty("_Metallic", properties, false);
                 specColor = BaseShaderGUI.FindProperty("_SpecColor", properties, false);
-                metallicGlossMap = BaseShaderGUI.FindProperty("_MetallicGlossMap", properties);
+                metallicGlossMap = BaseShaderGUI.FindProperty("_MetallicGlossMap", properties, false);
                 specGlossMap = BaseShaderGUI.FindProperty("_SpecGlossMap", properties, false);
                 smoothness = BaseShaderGUI.FindProperty("_Smoothness", properties, false);
                 smoothnessMapChannel = BaseShaderGUI.FindProperty("_SmoothnessTextureChannel", properties, false);
@@ -118,12 +134,15 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 clearCoatMap = BaseShaderGUI.FindProperty("_ClearCoatMap", properties, false);
                 clearCoatMask = BaseShaderGUI.FindProperty("_ClearCoatMask", properties, false);
                 clearCoatSmoothness = BaseShaderGUI.FindProperty("_ClearCoatSmoothness", properties, false);
+
+                smaMap = BaseShaderGUI.FindProperty("_SMAMap", properties, false);
             }
         }
 
         public static void Inputs(LitProperties properties, MaterialEditor materialEditor, Material material)
         {
             DoMetallicSpecularArea(properties, materialEditor, material);
+            DoSMAArea(properties, materialEditor, material);
             BaseShaderGUI.DrawNormalArea(materialEditor, properties.bumpMapProp, properties.bumpScaleProp);
 
             if (HeightmapAvailable(material))
@@ -139,6 +158,197 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             // otherwise we will get null ref exception from MaterialEditor GUI helpers.
             if (ClearCoatAvailable(material))
                 DoClearCoat(properties, materialEditor, material);
+
+            if (properties.smaMap != null)
+                return;
+
+            if (GUILayout.Button("Convert to SMA"))
+            {
+                Undo.RecordObject(material, "SMA Conversion");
+
+                // Grab our metallic, smoothness, and occlusion maps
+                Texture2D metallicGloss = properties.metallicGlossMap.textureValue as Texture2D;
+                Texture2D occlusion = null;
+
+                Texture2D albedo = material.mainTexture as Texture2D;
+
+                if (properties.occlusionMap != null)
+                    occlusion = properties.occlusionMap.textureValue as Texture2D;
+
+                // GMA, Gloss, Metallic, AO
+                int dimX = 0;
+                int dimY = 0;
+
+                if (metallicGloss != null)
+                {
+                    dimX = Mathf.Max(dimX, metallicGloss.width);
+                    dimY = Mathf.Max(dimY, metallicGloss.height);
+                }
+
+                if (occlusion != null)
+                {
+                    dimX = Mathf.Max(dimX, occlusion.width);
+                    dimY = Mathf.Max(dimY, occlusion.height);
+                }
+
+                if (albedo != null)
+                {
+                    dimX = Mathf.Max(dimX, albedo.width);
+                    dimY = Mathf.Max(dimY, albedo.height);
+                }
+
+                if (dimX == 0 || dimY == 0)
+                {
+                    material.shader = Shader.Find("Strayed/Lit (SMA)");
+                    return;
+                }
+
+                Texture2D DuplicateTexture(Texture2D source)
+                {
+                    if (source == null)
+                        return null;
+
+                    RenderTexture temp =
+                        RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+
+                    RenderTexture lastActive = RenderTexture.active;
+
+                    Graphics.Blit(source, temp);
+
+                    RenderTexture.active = temp;
+
+                    Texture2D ret = new Texture2D(source.width, source.height, TextureFormat.RGBAHalf, true, true);
+
+                    ret.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+                    ret.Apply();
+
+                    RenderTexture.active = lastActive;
+
+                    return ret;
+                }
+
+                Texture2D rmaTemp = new Texture2D(dimX, dimY, TextureFormat.RGBAHalf, true, true);
+
+                Texture2D occlusionDupe = DuplicateTexture(occlusion);
+                Texture2D metallicGlossDupe = DuplicateTexture(metallicGloss);
+
+                Texture2D albedoDupe = DuplicateTexture(albedo);
+
+                bool glossIsAlbedo = GetSmoothnessMapChannel(material) == SmoothnessMapChannel.AlbedoAlpha;
+                Debug.Log($"[LitGUI::SMAConverter]: Gloss is Albedo? {glossIsAlbedo}");
+
+                float perX = 1.0F / (dimX - 1);
+                float perY = 1.0F / (dimY - 1);
+
+                for (int x = 0; x < dimX; x++)
+                {
+                    float u = x * perX;
+
+                    for (int y = 0; y < dimY; y++)
+                    {
+                        float v = y * perY;
+
+                        Color color = Color.white;
+
+                        bool setGloss = false;
+                        bool setMetal = false;
+
+                        if (metallicGlossDupe)
+                        {
+                            Color mg = Color.black;
+
+                            if (metallicGlossDupe.width == dimX && metallicGlossDupe.height == dimY)
+                                mg = metallicGlossDupe.GetPixel(x, y);
+                            else
+                                mg = metallicGlossDupe.GetPixelBilinear(u, v);
+
+                            color.g = mg.r;
+                            setMetal = true;
+
+                            if (!glossIsAlbedo)
+                            {
+                                color.r = mg.a;
+                                setGloss = true;
+                            }
+                        }
+
+                        if (albedoDupe && glossIsAlbedo)
+                        {
+                            Color col = Color.black;
+
+                            if (albedoDupe.width == dimX && albedoDupe.height == dimY)
+                                col = albedoDupe.GetPixel(x, y);
+                            else
+                                col = albedoDupe.GetPixelBilinear(u, v);
+
+                            color.r = col.a;
+                            setGloss = true;
+                        }
+
+                        //if (properties.smoothness != null && !setGloss)
+                        //    color.r = Mathf.LinearToGammaSpace(properties.smoothness.floatValue);
+
+                        if (properties.metallic != null && !setMetal)
+                            color.g = (properties.metallic.floatValue);
+
+                        if (occlusionDupe)
+                        {
+                            Color ao = Color.black;
+
+                            if (occlusionDupe.width == dimX && occlusionDupe.height == dimY)
+                                ao = occlusionDupe.GetPixel(x, y);
+                            else
+                                ao = occlusionDupe.GetPixelBilinear(u, v);
+
+                            color.b = ao.r;
+                        }
+
+                        rmaTemp.SetPixel(x, y, color);
+                    }
+                }
+
+                rmaTemp.Apply();
+
+                string rel = AssetDatabase.GetAssetPath(material);
+
+                string stem = Path.GetDirectoryName(rel);
+                string file = Path.GetFileNameWithoutExtension(rel);
+
+                string path = Path.Combine(stem, $"{file}_SMA.png");
+
+                using (var stream = File.Create(path))
+                {
+                    stream.Write(rmaTemp.EncodeToPNG());
+                    stream.Flush();
+                }
+
+                AssetDatabase.ImportAsset(path);
+                Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+
+                if (importer != null)
+                {
+                    importer.sRGBTexture = false;
+                    importer.streamingMipmaps = true;
+
+                    var settings = importer.GetPlatformTextureSettings("Android");
+
+                    settings.format = TextureImporterFormat.Automatic;
+                    settings.maxTextureSize = 512;
+                    settings.overridden = true;
+
+                    importer.SetPlatformTextureSettings(settings);
+
+                    EditorUtility.SetDirty(importer);
+                    importer.SaveAndReimport();
+                }
+
+                material.shader = Shader.Find("Strayed/Lit (SMA)");
+                material.SetTexture("_SMAMap", tex);
+
+                EditorUtility.SetDirty(material);
+            }
         }
 
         private static bool ClearCoatAvailable(Material material)
@@ -187,6 +397,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
         public static void DoMetallicSpecularArea(LitProperties properties, MaterialEditor materialEditor, Material material)
         {
+            if (properties.smaMap != null)
+                return;
+
             string[] smoothnessChannelNames;
             bool hasGlossMap = false;
             if (properties.workflowMode == null ||
@@ -205,6 +418,22 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                     hasGlossMap ? null : properties.specColor);
             }
             DoSmoothness(materialEditor, material, properties.smoothness, properties.smoothnessMapChannel, smoothnessChannelNames);
+        }
+
+        public static void DoSMAArea(LitProperties properties, MaterialEditor materialEditor, Material material)
+        {
+            if (properties.smaMap == null)
+                return;
+
+            materialEditor.TexturePropertySingleLine(Styles.smaMap, properties.smaMap);
+
+            EditorGUI.indentLevel += 2;
+
+            materialEditor.ShaderProperty(properties.smoothness, Styles.smoothnessText);
+            //materialEditor.ShaderProperty(properties.metallic, Styles.metallicText);
+            materialEditor.ShaderProperty(properties.occlusionStrength, Styles.occlusionStrengthText);
+
+            EditorGUI.indentLevel -= 2;
         }
 
         internal static bool IsOpaque(Material material)
@@ -276,6 +505,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             CoreUtils.SetKeyword(material, "_METALLICSPECGLOSSMAP", hasGlossMap);
 
+            if (material.HasProperty("_SMAMap"))
+                CoreUtils.SetKeyword(material, "_SMA_COMBINED_MAP", material.GetTexture("_SMAMap"));
+
             if (material.HasProperty("_SpecularHighlights"))
                 CoreUtils.SetKeyword(material, "_SPECULARHIGHLIGHTS_OFF",
                     material.GetFloat("_SpecularHighlights") == 0.0f);
@@ -286,7 +518,14 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 CoreUtils.SetKeyword(material, "_OCCLUSIONMAP", material.GetTexture("_OcclusionMap"));
 
             if (material.HasProperty("_ParallaxMap"))
-                CoreUtils.SetKeyword(material, "_PARALLAXMAP", material.GetTexture("_ParallaxMap"));
+            {
+                bool enabled = material.GetTexture("_ParallaxMap");
+
+                //if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+                //    enabled = false;
+
+                CoreUtils.SetKeyword(material, "_PARALLAXMAP", enabled);
+            }
 
             if (material.HasProperty("_SmoothnessTextureChannel"))
             {
