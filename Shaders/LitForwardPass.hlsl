@@ -198,6 +198,19 @@ half4 LitPassFragment(Varyings input) : SV_Target
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
+    #if defined(LOD_FADE_CROSSFADE)
+    // zCubed: Unity flips the sign when blending in and out, we don't care but we need to invert the noise based on that
+    float blendCullFac = 0;
+    float blendNoise = InterleavedGradientNoise(input.positionCS.xy, 0);
+    if (sign(unity_LODFade.x) == 1)
+        blendCullFac = unity_LODFade.x < blendNoise;
+    else
+        blendCullFac = abs(unity_LODFade.x) > blendNoise;
+
+    if (blendCullFac)
+        discard;
+    #endif
+
 #if defined(_PARALLAXMAP)
 #if defined(REQUIRES_TANGENT_SPACE_VIEW_DIR_INTERPOLATOR)
     half3 viewDirTS = input.viewDirTS;

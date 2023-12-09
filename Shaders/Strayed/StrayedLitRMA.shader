@@ -114,13 +114,13 @@ Shader "Strayed/Lit (SMA)"
             #pragma shader_feature_local_fragment _SPECULAR_SETUP
 
             #ifndef SHADER_API_MOBILE
-            
+
             #pragma shader_feature_local _PARALLAXMAP
-            
+
             #else
-            
+
             #undef _PARALLAXMAP
-            
+
             #endif
 
             // -------------------------------------
@@ -146,6 +146,8 @@ Shader "Strayed/Lit (SMA)"
             #pragma multi_compile _ DYNAMICLIGHTMAP_ON
             #pragma multi_compile_fog
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
+
+            #pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 
             //--------------------------------------
             // GPU Instancing

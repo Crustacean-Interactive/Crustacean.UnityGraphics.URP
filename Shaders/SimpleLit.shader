@@ -98,6 +98,8 @@ Shader "Universal Render Pipeline/Simple Lit"
             #pragma multi_compile_fog
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
 
+            #pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+
             //--------------------------------------
             // GPU Instancing
             #pragma multi_compile_instancing
