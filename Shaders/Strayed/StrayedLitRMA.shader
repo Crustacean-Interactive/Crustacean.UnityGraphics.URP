@@ -186,6 +186,7 @@ Shader "Strayed/Lit (SMA)"
             // GPU Instancing
             #pragma multi_compile_instancing
             #pragma multi_compile _ DOTS_INSTANCING_ON
+            #pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 
             // -------------------------------------
             // Universal Pipeline keywords
