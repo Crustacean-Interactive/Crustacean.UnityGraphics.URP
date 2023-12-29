@@ -137,6 +137,7 @@ half4 UnlitPassFragment(Varyings input) : SV_Target
 
     finalColor.rgb = MixFog(finalColor.rgb, fogFactor);
 
+    APPLY_STRAYED_TONEMAP(finalColor);
     return finalColor;
 }
 

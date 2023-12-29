@@ -121,5 +121,7 @@ half4 frag(PackedVaryings packedInput) : SV_TARGET
     half4 color = UniversalFragmentPBR(inputData, surface);
 
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
+
+    APPLY_STRAYED_TONEMAP(color);
     return color;
 }

@@ -28,7 +28,7 @@ struct Attributes
 
 struct Varyings
 {
-    float2 uv                       : TEXCOORD0;
+    half2 uv                       : TEXCOORD0;
 
 #if defined(REQUIRES_WORLD_SPACE_POS_INTERPOLATOR)
     float3 positionWS               : TEXCOORD1;
@@ -59,7 +59,7 @@ struct Varyings
     float2  dynamicLightmapUV : TEXCOORD9; // Dynamic lightmap UVs
 #endif
 
-    float4 positionCS               : SV_POSITION;
+    half4 positionCS               : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -227,6 +227,7 @@ half4 LitPassFragment(Varyings input) : SV_Target
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, _Surface);
 
+    APPLY_STRAYED_TONEMAP(color);
     return color;
 }
 
