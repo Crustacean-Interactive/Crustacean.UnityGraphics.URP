@@ -225,7 +225,12 @@ inline void InitializeStandardLitSurfaceData(float2 uv, out SurfaceData outSurfa
 #ifdef _SMA_COMBINED_MAP
     half4 sma = SAMPLE_TEXTURE2D(_SMAMap, sampler_SMAMap, uv);
 
-    half smoothness = sma.r * _Smoothness;
+    #ifdef _SMA_RED_IS_ROUGHNESS
+        half smoothness = (1.0F - sma.r) * _Smoothness;
+    #else
+        half smoothness = sma.r * _Smoothness;
+    #endif
+
     half metallic = sma.g;
     half occlusion = LerpWhiteTo(sma.b, _OcclusionStrength);
 #else

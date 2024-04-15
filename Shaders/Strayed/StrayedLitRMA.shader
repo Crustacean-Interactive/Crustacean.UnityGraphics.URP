@@ -1,4 +1,4 @@
-Shader "Strayed/Lit (SMA)"
+Shader "Strayed/Lit (SMA / RMA)"
 {
     Properties
     {
@@ -10,9 +10,10 @@ Shader "Strayed/Lit (SMA)"
 
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        _SMAMap("SMA Map", 2D) = "white" {}
+        _SMAMap("Combined Channel Map (SMA / RMA)", 2D) = "white" {}
+        [ToggleUI] _SMA_RMA_Flip("Is RMA", Float) = 0.0
 
-        _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
+        _Smoothness("Smoothness", Range(0.0, 1.0)) = 1.0
         //_SmoothnessTextureChannel("Smoothness texture channel", Float) = 0
 
         _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
@@ -112,6 +113,7 @@ Shader "Strayed/Lit (SMA)"
             //#pragma shader_feature_local_fragment _ENVIRONMENTREFLECTIONS_OFF
             #pragma shader_feature_local_fragment _SMA_COMBINED_MAP
             #pragma shader_feature_local_fragment _SPECULAR_SETUP
+            #pragma shader_feature_local_fragment _SMA_RED_IS_ROUGHNESS
 
             #ifndef SHADER_API_MOBILE
 

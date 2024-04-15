@@ -27,6 +27,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             public static GUIContent smaMap =
                 EditorGUIUtility.TrTextContent("SMA Map", "Smoothness, Metallic, AO combined map texture.");
 
+            public static GUIContent smaRMAFlip =
+                EditorGUIUtility.TrTextContent("SMA is RMA", "SMA texture is actually an RMA, with red being roughness instead of smoothness.");
+
             public static GUIContent workflowModeText = EditorGUIUtility.TrTextContent("Workflow Mode",
                 "Select a workflow that fits your textures. Choose between Metallic or Specular.");
 
@@ -100,6 +103,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             public MaterialProperty smaMap;
 
+            public MaterialProperty smaRMAFlip;
+
             // Advanced Props
             public MaterialProperty highlights;
             public MaterialProperty reflections;
@@ -136,6 +141,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 clearCoatSmoothness = BaseShaderGUI.FindProperty("_ClearCoatSmoothness", properties, false);
 
                 smaMap = BaseShaderGUI.FindProperty("_SMAMap", properties, false);
+                smaRMAFlip = BaseShaderGUI.FindProperty("_SMA_RMA_Flip", properties, false);
             }
         }
 
@@ -429,6 +435,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             EditorGUI.indentLevel += 2;
 
+            materialEditor.ShaderProperty(properties.smaRMAFlip, Styles.smaRMAFlip);
+
             materialEditor.ShaderProperty(properties.smoothness, Styles.smoothnessText);
             //materialEditor.ShaderProperty(properties.metallic, Styles.metallicText);
             materialEditor.ShaderProperty(properties.occlusionStrength, Styles.occlusionStrengthText);
@@ -507,6 +515,10 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             if (material.HasProperty("_SMAMap"))
                 CoreUtils.SetKeyword(material, "_SMA_COMBINED_MAP", material.GetTexture("_SMAMap"));
+
+            if (material.HasProperty("_SMA_RMA_Flip"))
+                CoreUtils.SetKeyword(material, "_SMA_RED_IS_ROUGHNESS", 
+                material.GetFloat("_SMA_RMA_Flip") == 1.0F);
 
             if (material.HasProperty("_SpecularHighlights"))
                 CoreUtils.SetKeyword(material, "_SPECULARHIGHLIGHTS_OFF",
