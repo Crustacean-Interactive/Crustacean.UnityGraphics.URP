@@ -1,4 +1,4 @@
-Shader "Strayed/Lit (SMA / RMA)"
+Shader "Strayed/Lit (SMA & RMA)"
 {
     Properties
     {

@@ -205,7 +205,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
                 if (dimX == 0 || dimY == 0)
                 {
-                    material.shader = Shader.Find("Strayed/Lit (SMA)");
+                    material.shader = Shader.Find("Strayed/Lit (SMA & RMA)");
                     return;
                 }
 
@@ -333,6 +333,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
                 var importer = AssetImporter.GetAtPath(path) as TextureImporter;
 
+
                 if (importer != null)
                 {
                     importer.sRGBTexture = false;
@@ -350,7 +351,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                     importer.SaveAndReimport();
                 }
 
-                material.shader = Shader.Find("Strayed/Lit (SMA)");
+                material.shader = Shader.Find("Strayed/Lit (SMA & RMA)");
                 material.SetTexture("_SMAMap", tex);
 
                 EditorUtility.SetDirty(material);
@@ -432,6 +433,29 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 return;
 
             materialEditor.TexturePropertySingleLine(Styles.smaMap, properties.smaMap);
+
+            if (properties.smaMap.textureValue != null && properties.smaMap.textureValue is Texture2D tex2D)
+            {
+                string path = AssetDatabase.GetAssetPath(tex2D);
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+
+                if (importer != null && importer.sRGBTexture && GUILayout.Button("Set SMA/RMA to sRGB"))
+                {
+                    importer.sRGBTexture = false;
+                    importer.streamingMipmaps = true;
+
+                    var settings = importer.GetPlatformTextureSettings("Android");
+
+                    settings.format = TextureImporterFormat.Automatic;
+                    settings.maxTextureSize = 512;
+                    settings.overridden = true;
+
+                    importer.SetPlatformTextureSettings(settings);
+
+                    EditorUtility.SetDirty(importer);
+                    importer.SaveAndReimport();
+                }
+            }
 
             EditorGUI.indentLevel += 2;
 
@@ -517,7 +541,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 CoreUtils.SetKeyword(material, "_SMA_COMBINED_MAP", material.GetTexture("_SMAMap"));
 
             if (material.HasProperty("_SMA_RMA_Flip"))
-                CoreUtils.SetKeyword(material, "_SMA_RED_IS_ROUGHNESS", 
+                CoreUtils.SetKeyword(material, "_SMA_RED_IS_ROUGHNESS",
                 material.GetFloat("_SMA_RMA_Flip") == 1.0F);
 
             if (material.HasProperty("_SpecularHighlights"))
