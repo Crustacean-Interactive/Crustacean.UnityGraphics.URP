@@ -18,6 +18,8 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Version.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Strayed/Utils.hlsl"
+
 #if !defined(SHADER_HINT_NICE_QUALITY)
     #if defined(SHADER_API_MOBILE) || defined(SHADER_API_SWITCH)
         #define SHADER_HINT_NICE_QUALITY 0
@@ -38,9 +40,9 @@
 const half3 StrayedColorTemperatureToRGB(half temperatureInKelvins)
 {
 	half3 retColor;
-	
+
     temperatureInKelvins = clamp(temperatureInKelvins, 1000.0, 40000.0) / 100.0;
-    
+
     if (temperatureInKelvins <= 66.0)
     {
         retColor.r = 1.0;
@@ -52,7 +54,7 @@ const half3 StrayedColorTemperatureToRGB(half temperatureInKelvins)
         retColor.r = saturate(1.29293618606274509804 * pow(t, -0.1332047592));
         retColor.g = saturate(1.12989086089529411765 * pow(t, -0.0755148492));
     }
-    
+
     if (temperatureInKelvins >= 66.0)
         retColor.b = 1.0;
     else if(temperatureInKelvins <= 19.0)
@@ -105,10 +107,10 @@ half3 StrayedRGBtoHSL(half3 RGB)
 
 inline void StrayedApplyWhiteBalance(inout half3 rgb) {
     const half3 colorK = StrayedColorTemperatureToRGB(STRAYED_KELVIN);
-    
+
     rgb *= saturate(colorK) * STRAYED_TONEMAP_EXPOSURE;
     return;
-    
+
     const half fac = 1.0F;
     const half lumaPreserve = 1.0F;
 
@@ -117,8 +119,8 @@ inline void StrayedApplyWhiteBalance(inout half3 rgb) {
     half3 blended = lerp(rgb, rgb * colorK, fac);
 
     half3 resultHSL = StrayedRGBtoHSL(blended);
-    
-    half3 luminancePreservedRGB = StrayedHSLtoRGB(half3(resultHSL.x, resultHSL.y, luma));        
+
+    half3 luminancePreservedRGB = StrayedHSLtoRGB(half3(resultHSL.x, resultHSL.y, luma));
 
     rgb = lerp(blended, luminancePreservedRGB, lumaPreserve);
 }
