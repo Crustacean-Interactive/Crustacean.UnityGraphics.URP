@@ -16,6 +16,8 @@ namespace UnityEditor.Rendering.Universal
             public static GUIContent advancedSettingsText = EditorGUIUtility.TrTextContent("Advanced");
             public static GUIContent adaptivePerformanceText = EditorGUIUtility.TrTextContent("Adaptive Performance");
 
+            public static GUIContent strayedAdditionsText = EditorGUIUtility.TrTextContent("Strayed Additions", "This section contains properties related to Strayed-specific URP modifications.");
+
             // Rendering
             public static GUIContent rendererHeaderText = EditorGUIUtility.TrTextContent("Renderer List", "Lists all the renderers available to this Render Pipeline Asset.");
             public static GUIContent rendererDefaultText = EditorGUIUtility.TrTextContent("Default", "This renderer is currently the default for the render pipeline.");

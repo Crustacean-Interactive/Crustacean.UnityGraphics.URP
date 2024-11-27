@@ -48,8 +48,16 @@ namespace UnityEngine.Rendering.Universal
             public Material decal;
         }
 
+        [Serializable, ReloadGroup]
+        public sealed class StrayedResources
+        {
+            [Reload("Runtime/Textures/NeutralLUT.png")]
+            public Texture2D globalLUT;
+        }
+
         public ShaderResources shaders;
         public MaterialResources materials;
+        public StrayedResources strayedResources;
     }
 
 #if UNITY_EDITOR

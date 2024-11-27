@@ -32,106 +32,44 @@
 // BUILT IN TONEMAPPING
 #ifndef DISABLE_STRAYED_TONEMAPPING
 
-// https://www.shadertoy.com/view/lsSXW1
-#define STRAYED_TONEMAP_EXPOSURE 1.59107297
-#define STRAYED_EPSILON 1e-10
-#define STRAYED_KELVIN 5880
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
-const half3 StrayedColorTemperatureToRGB(half temperatureInKelvins)
-{
-	half3 retColor;
+Texture2D _StrayedGlobalLUT;
+SamplerState sampler_StrayedGlobalLUT;
+half4 _StrayedGlobalLUT_Params;
 
-    temperatureInKelvins = clamp(temperatureInKelvins, 1000.0, 40000.0) / 100.0;
+half4 _StrayedGlobalVignette;
 
-    if (temperatureInKelvins <= 66.0)
-    {
-        retColor.r = 1.0;
-        retColor.g = saturate(0.39008157876901960784 * log(temperatureInKelvins) - 0.63184144378862745098);
-    }
-    else
-    {
-    	float t = temperatureInKelvins - 60.0;
-        retColor.r = saturate(1.29293618606274509804 * pow(t, -0.1332047592));
-        retColor.g = saturate(1.12989086089529411765 * pow(t, -0.0755148492));
-    }
-
-    if (temperatureInKelvins >= 66.0)
-        retColor.b = 1.0;
-    else if(temperatureInKelvins <= 19.0)
-        retColor.b = 0.0;
-    else
-        retColor.b = saturate(0.54320678911019607843 * log(temperatureInKelvins - 10.0) - 1.19625408914);
-
-    return retColor;
+inline void StrayedApplyLUT(inout half4 color) {
+    color.rgb = saturate(color.rgb);
+    color.rgb = ApplyLut2D(TEXTURE2D_ARGS(_StrayedGlobalLUT, sampler_StrayedGlobalLUT), color.rgb, _StrayedGlobalLUT_Params);
 }
 
-half StrayedLuminance(half3 rgb)
-{
-    half fmin = min(min(rgb.r, rgb.g), rgb.b);
-	half fmax = max(max(rgb.r, rgb.g), rgb.b);
-	return (fmax + fmin) / 2.0;
+inline void StrayedApplyVignette(inout half4 color, in half4 vignettePacked) {
+    // RGB is lerped to the vignette amount based on vignette alpha
+
+    color.rgb = lerp(color.rgb, vignettePacked.rgb, vignettePacked.a);
 }
 
-half3 StrayedHUEtoRGB(float H)
-{
-    float R = abs(H * 6.0 - 3.0) - 1.0;
-    float G = 2.0 - abs(H * 6.0 - 2.0);
-    float B = 2.0 - abs(H * 6.0 - 4.0);
-    return saturate(half3(R,G,B));
-}
-
-half3 StrayedHSLtoRGB(in half3 HSL)
-{
-    half3 RGB = StrayedHUEtoRGB(HSL.x);
-    float C = (1.0 - abs(2.0 * HSL.z - 1.0)) * HSL.y;
-    return (RGB - 0.5) * C + HSL.zzz;
-}
-
-half3 StrayedRGBtoHCV(half3 RGB)
-{
-    // Based on work by Sam Hocevar and Emil Persson
-    half4 P = (RGB.g < RGB.b) ? half4(RGB.bg, -1.0, 2.0/3.0) : half4(RGB.gb, 0.0, -1.0/3.0);
-    half4 Q = (RGB.r < P.x) ? half4(P.xyw, RGB.r) : half4(RGB.r, P.yzx);
-    float C = Q.x - min(Q.w, Q.y);
-    float H = abs((Q.w - Q.y) / (6.0 * C + STRAYED_EPSILON) + Q.z);
-    return half3(H, C, Q.x);
-}
-
-half3 StrayedRGBtoHSL(half3 RGB)
-{
-    half3 HCV = StrayedRGBtoHCV(RGB);
-    float L = HCV.z - HCV.y * 0.5;
-    float S = HCV.y / (1.0 - abs(L * 2.0 - 1.0) + STRAYED_EPSILON);
-    return half3(HCV.x, S, L);
-}
-
-inline void StrayedApplyWhiteBalance(inout half3 rgb) {
-    const half3 colorK = StrayedColorTemperatureToRGB(STRAYED_KELVIN);
-
-    rgb *= saturate(colorK) * STRAYED_TONEMAP_EXPOSURE;
-    return;
-
-    const half fac = 1.0F;
-    const half lumaPreserve = 1.0F;
-
-    half luma = StrayedLuminance(rgb);
-
-    half3 blended = lerp(rgb, rgb * colorK, fac);
-
-    half3 resultHSL = StrayedRGBtoHSL(blended);
-
-    half3 luminancePreservedRGB = StrayedHSLtoRGB(half3(resultHSL.x, resultHSL.y, luma));
-
-    rgb = lerp(blended, luminancePreservedRGB, lumaPreserve);
-}
-
-#define APPLY_STRAYED_TONEMAP(col) (StrayedApplyWhiteBalance(col.rgb))
+#define STRAYED_COLOR_GRADING(col, vignette) \
+    StrayedApplyVignette(col, vignette); \
+    StrayedApplyLUT(col);
 
 #else
 
-#define APPLY_STRAYED_TONEMAP(col)
+#define STRAYED_COLOR_GRADING(col, vignette)
 
 #endif
+
+// Branchless solution to clipping the vignette
+#define BRANCHLESS_VIGNETTE(radius) lerp(radius, 0, _StrayedGlobalVignette.a > 5.0F)
+
+#define CLIP_VIGNETTE_SDF(screenUV) saturate(length((screenUV - 0.5F) * 2.0F) - _StrayedGlobalVignette.a)
+#define FAST_CLIP_VIGNETTE(screenUV) half4(_StrayedGlobalVignette.rgb, BRANCHLESS_VIGNETTE(CLIP_VIGNETTE_SDF(screenUV)))
+#define FALLBACK_VIGNETTE(clipPosition) FAST_CLIP_VIGNETTE(UnityStereoTransformScreenSpaceTex(GetNormalizedScreenSpaceUV(clipPosition)))
+
+#define APPLY_STRAYED_TONEMAP(col) STRAYED_COLOR_GRADING(col, half4(0.0F))
+
 // ====================
 
 // Shader Quality Tiers in Universal.

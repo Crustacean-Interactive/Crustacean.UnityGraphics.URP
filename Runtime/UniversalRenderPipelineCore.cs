@@ -361,6 +361,13 @@ namespace UnityEngine.Rendering.Universal
 
         // Required for 2D Unlit Shadergraph master node as it doesn't currently support hidden properties.
         public static readonly int rendererColor = Shader.PropertyToID("_RendererColor");
+
+        // Strayed
+        public static readonly int strayedGlobalLUT = Shader.PropertyToID("_StrayedGlobalLUT");
+
+        public static readonly int strayedGlobalLUTParams = Shader.PropertyToID("_StrayedGlobalLUT_Params");
+
+        public static readonly int strayedGlobalVignette = Shader.PropertyToID("_StrayedGlobalVignette");
     }
 
     public struct PostProcessingData

@@ -18,6 +18,8 @@ namespace UnityEditor.Rendering.Universal
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
             AdaptivePerformance = 1 << 6,
 #endif
+
+            StrayedAdditions = 1 << 7,
         }
 
         enum ExpandableAdditional
@@ -26,6 +28,8 @@ namespace UnityEditor.Rendering.Universal
             Lighting = 1 << 2,
             PostProcessing = 1 << 3,
             Shadows = 1 << 4,
+
+            StrayedAdditions = 1 << 7
         }
 
         internal static void RegisterEditor(UniversalRenderPipelineAssetEditor editor)
@@ -106,9 +110,12 @@ namespace UnityEditor.Rendering.Universal
             CED.AdditionalPropertiesFoldoutGroup(Styles.lightingSettingsText, Expandable.Lighting, k_ExpandedState, ExpandableAdditional.Lighting, k_AdditionalPropertiesState, DrawLighting, DrawLightingAdditional),
             CED.AdditionalPropertiesFoldoutGroup(Styles.shadowSettingsText, Expandable.Shadows, k_ExpandedState, ExpandableAdditional.Shadows, k_AdditionalPropertiesState, DrawShadows, DrawShadowsAdditional),
             CED.AdditionalPropertiesFoldoutGroup(Styles.postProcessingSettingsText, Expandable.PostProcessing, k_ExpandedState, ExpandableAdditional.PostProcessing, k_AdditionalPropertiesState, DrawPostProcessing, DrawPostProcessingAdditional)
+
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
             , CED.FoldoutGroup(Styles.adaptivePerformanceText, Expandable.AdaptivePerformance, k_ExpandedState, CED.Group(DrawAdaptivePerformance))
 #endif
+
+            , CED.FoldoutGroup(Styles.strayedAdditionsText, Expandable.StrayedAdditions, k_ExpandedState, CED.Group(DrawStrayedAdditions))
         );
 
         static void DrawRendering(SerializedUniversalRenderPipelineAsset serialized, Editor ownerEditor)
@@ -482,6 +489,12 @@ namespace UnityEditor.Rendering.Universal
         static void DrawPostProcessingAdditional(SerializedUniversalRenderPipelineAsset serialized, Editor ownerEditor)
         {
             CoreEditorUtils.DrawPopup(Styles.volumeFrameworkUpdateMode, serialized.volumeFrameworkUpdateModeProp, Styles.volumeFrameworkUpdateOptions);
+        }
+
+        static void DrawStrayedAdditions(SerializedUniversalRenderPipelineAsset serialized, Editor owningEditor)
+        {
+            EditorGUILayout.PropertyField(serialized.strayedGlobalLUT);
+            EditorGUILayout.PropertyField(serialized.strayedGlobalVignette);
         }
 
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER

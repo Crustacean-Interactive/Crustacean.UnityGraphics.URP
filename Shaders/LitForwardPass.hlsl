@@ -110,6 +110,8 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
 #endif
 
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+    UnityStereoTransformScreenSpaceTex(inputData.normalizedScreenSpaceUV);
+
     inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 
     #if defined(DEBUG_DISPLAY)
@@ -227,7 +229,7 @@ half4 LitPassFragment(Varyings input) : SV_Target
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, _Surface);
 
-    APPLY_STRAYED_TONEMAP(color);
+    STRAYED_COLOR_GRADING(color, FAST_CLIP_VIGNETTE(inputData.normalizedScreenSpaceUV))
     return color;
 }
 

@@ -337,6 +337,25 @@ namespace UnityEngine.Rendering.Universal
         public static readonly int AdditionalLightsDefaultShadowResolutionTierMedium = 512;
         public static readonly int AdditionalLightsDefaultShadowResolutionTierHigh = 1024;
 
+        // Strayed Features
+        [SerializeField] Texture2D m_StrayedGlobalLUT;
+
+        public Texture2D StrayedGlobalLUT
+        {
+            get => m_StrayedGlobalLUT == null ? editorResources.strayedResources.globalLUT : m_StrayedGlobalLUT;
+            set => m_StrayedGlobalLUT = value;
+        }
+
+        // Used internally by strayed for post processing
+
+        [SerializeField] Vector4 m_StrayedGlobalVignette;
+
+        public Vector4 StrayedGlobalVignette
+        {
+            get => m_StrayedGlobalVignette;
+            set => m_StrayedGlobalVignette = value;
+        }
+
 #if UNITY_EDITOR
         [NonSerialized]
         internal UniversalRenderPipelineEditorResources m_EditorResourcesAsset;

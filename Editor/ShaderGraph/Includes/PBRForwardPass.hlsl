@@ -39,7 +39,10 @@ void InitializeInputData(Varyings input, SurfaceDescription surfaceDescription, 
 #else
     inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.sh, inputData.normalWS);
 #endif
+
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+    UnityStereoTransformScreenSpaceTex(inputData.normalizedScreenSpaceUV);
+
     inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 
     #if defined(DEBUG_DISPLAY)
@@ -122,6 +125,6 @@ half4 frag(PackedVaryings packedInput) : SV_TARGET
 
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
 
-    APPLY_STRAYED_TONEMAP(color);
+    STRAYED_COLOR_GRADING(color, FAST_CLIP_VIGNETTE(inputData.normalizedScreenSpaceUV))
     return color;
 }

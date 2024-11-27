@@ -1266,6 +1266,14 @@ namespace UnityEngine.Rendering.Universal
 
             // Required for 2D Unlit Shadergraph master node as it doesn't currently support hidden properties.
             Shader.SetGlobalColor(ShaderPropertyId.rendererColor, Color.white);
+
+            // Strayed LUT
+            float lutWidth = asset.StrayedGlobalLUT.width;
+            float lutHeight = asset.StrayedGlobalLUT.height;
+
+            Shader.SetGlobalTexture(ShaderPropertyId.strayedGlobalLUT, asset.StrayedGlobalLUT);
+            Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalLUTParams, new Vector4(1F / lutWidth, 1F / lutHeight, lutHeight - 1F, 1.0F));
+            Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, asset.StrayedGlobalVignette);
         }
 
         static void CheckAndApplyDebugSettings(ref RenderingData renderingData)
