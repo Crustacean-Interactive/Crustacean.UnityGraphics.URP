@@ -458,6 +458,16 @@ namespace UnityEngine.Rendering.Universal
                 ConfigureCameraColorTarget(activeColorRenderTargetId);
             }
 
+            // If reflection probe, do not setup vignette
+            if (cameraData.cameraType == CameraType.Reflection)
+            {
+                Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, new Vector4(0, 0, 0, 10));
+            }
+            else
+            {
+                Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, UniversalRenderPipeline.asset.StrayedGlobalVignette);
+            }
+
             // Add render passes and gather the input requirements
             isCameraColorTargetValid = true;
             AddRenderPasses(ref renderingData);

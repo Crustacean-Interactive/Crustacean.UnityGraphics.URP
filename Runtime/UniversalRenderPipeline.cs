@@ -1273,7 +1273,6 @@ namespace UnityEngine.Rendering.Universal
 
             Shader.SetGlobalTexture(ShaderPropertyId.strayedGlobalLUT, asset.StrayedGlobalLUT);
             Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalLUTParams, new Vector4(1F / lutWidth, 1F / lutHeight, lutHeight - 1F, 1.0F));
-            Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, asset.StrayedGlobalVignette);
         }
 
         static void CheckAndApplyDebugSettings(ref RenderingData renderingData)

@@ -58,6 +58,6 @@ half4 frag(PackedVaryings packedInput) : SV_TARGET
 
     half4 finalColor = UniversalFragmentUnlit(inputData, surfaceDescription.BaseColor, alpha);
 
-    STRAYED_COLOR_GRADING(finalColor, FAST_CLIP_VIGNETTE(inputData.normalizedScreenSpaceUV))
+    STRAYED_COLOR_GRADING(finalColor, FALLBACK_VIGNETTE(packedInput.positionCS))
     return finalColor;
 }
