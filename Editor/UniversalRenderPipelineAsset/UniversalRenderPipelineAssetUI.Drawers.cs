@@ -495,6 +495,7 @@ namespace UnityEditor.Rendering.Universal
         {
             EditorGUILayout.PropertyField(serialized.strayedGlobalLUT);
             EditorGUILayout.PropertyField(serialized.strayedGlobalVignette);
+            EditorGUILayout.PropertyField(serialized.strayedGlobalVignetteRadius);
         }
 
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER

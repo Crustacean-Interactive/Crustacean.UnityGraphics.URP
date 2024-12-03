@@ -1272,7 +1272,7 @@ namespace UnityEngine.Rendering.Universal
             float lutHeight = asset.StrayedGlobalLUT.height;
 
             Shader.SetGlobalTexture(ShaderPropertyId.strayedGlobalLUT, asset.StrayedGlobalLUT);
-            Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalLUTParams, new Vector4(1F / lutWidth, 1F / lutHeight, lutHeight - 1F, 1.0F));
+            Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalLUTParams, new Vector4(1F / lutWidth, 1F / lutHeight, lutHeight - 1F, asset.StrayedGlobalVignetteRadius));
         }
 
         static void CheckAndApplyDebugSettings(ref RenderingData renderingData)

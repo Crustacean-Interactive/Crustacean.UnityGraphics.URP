@@ -461,7 +461,7 @@ namespace UnityEngine.Rendering.Universal
             // If reflection probe, do not setup vignette
             if (cameraData.cameraType == CameraType.Reflection)
             {
-                Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, new Vector4(0, 0, 0, 10));
+                Shader.SetGlobalVector(ShaderPropertyId.strayedGlobalVignette, new Vector4(0, 0, 0, 0));
             }
             else
             {

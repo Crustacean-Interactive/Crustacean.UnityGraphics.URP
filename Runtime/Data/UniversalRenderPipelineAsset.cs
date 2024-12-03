@@ -356,6 +356,14 @@ namespace UnityEngine.Rendering.Universal
             set => m_StrayedGlobalVignette = value;
         }
 
+        [SerializeField] float m_StrayedGlobalVignetteRadius;
+
+        public float StrayedGlobalVignetteRadius
+        {
+            get => m_StrayedGlobalVignetteRadius;
+            set => m_StrayedGlobalVignetteRadius = value;
+        }
+
 #if UNITY_EDITOR
         [NonSerialized]
         internal UniversalRenderPipelineEditorResources m_EditorResourcesAsset;

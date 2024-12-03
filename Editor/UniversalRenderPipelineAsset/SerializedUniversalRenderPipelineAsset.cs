@@ -68,6 +68,8 @@ namespace UnityEditor.Rendering.Universal
 
         public SerializedProperty strayedGlobalVignette { get; }
 
+        public SerializedProperty strayedGlobalVignetteRadius { get; }
+
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
         public SerializedProperty useAdaptivePerformance { get; }
 #endif
@@ -142,6 +144,7 @@ namespace UnityEditor.Rendering.Universal
 
             strayedGlobalLUT = serializedObject.FindProperty("m_StrayedGlobalLUT");
             strayedGlobalVignette = serializedObject.FindProperty("m_StrayedGlobalVignette");
+            strayedGlobalVignetteRadius = serializedObject.FindProperty("m_StrayedGlobalVignetteRadius");
 
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
             useAdaptivePerformance = serializedObject.FindProperty("m_UseAdaptivePerformance");

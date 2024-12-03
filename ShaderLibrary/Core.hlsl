@@ -45,10 +45,10 @@ inline void StrayedApplyLUT(inout half4 color) {
     color.rgb = ApplyLut2D(TEXTURE2D_ARGS(_StrayedGlobalLUT, sampler_StrayedGlobalLUT), color.rgb, _StrayedGlobalLUT_Params);
 }
 
-inline void StrayedApplyVignette(inout half4 color, in half4 vignettePacked) {
+inline void StrayedApplyVignette(inout half4 color, in half vignetteFac) {
     // RGB is lerped to the vignette amount based on vignette alpha
 
-    color.rgb = lerp(color.rgb, vignettePacked.rgb, vignettePacked.a);
+    color.rgb = lerp(color.rgb, _StrayedGlobalVignette.rgb, vignetteFac * _StrayedGlobalVignette.a);
 }
 
 #define STRAYED_COLOR_GRADING(col, vignette) \
@@ -62,10 +62,10 @@ inline void StrayedApplyVignette(inout half4 color, in half4 vignettePacked) {
 #endif
 
 // Branchless solution to clipping the vignette
-#define BRANCHLESS_VIGNETTE(radius) lerp(radius, 0, _StrayedGlobalVignette.a > 5.0F)
+#define BRANCHLESS_VIGNETTE(radius) lerp(radius, 0, _StrayedGlobalLUT_Params.a > 2.0F)
 
-#define CLIP_VIGNETTE_SDF(screenUV) saturate(length((screenUV - 0.5F) * 2.0F) - _StrayedGlobalVignette.a)
-#define FAST_CLIP_VIGNETTE(screenUV) half4(_StrayedGlobalVignette.rgb, BRANCHLESS_VIGNETTE(CLIP_VIGNETTE_SDF(screenUV)))
+#define CLIP_VIGNETTE_SDF(screenUV) saturate(dot((screenUV - 0.5F) * 2.0F, (screenUV - 0.5F) * 2.0F) - _StrayedGlobalLUT_Params.a)
+#define FAST_CLIP_VIGNETTE(screenUV) BRANCHLESS_VIGNETTE(CLIP_VIGNETTE_SDF(screenUV))
 #define FALLBACK_VIGNETTE(clipPosition) FAST_CLIP_VIGNETTE(UnityStereoTransformScreenSpaceTex(GetNormalizedScreenSpaceUV(clipPosition)))
 
 #define APPLY_STRAYED_TONEMAP(col) STRAYED_COLOR_GRADING(col, half4(0.0F))
