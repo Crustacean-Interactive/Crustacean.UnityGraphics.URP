@@ -342,7 +342,15 @@ namespace UnityEngine.Rendering.Universal
 
         public Texture2D StrayedGlobalLUT
         {
-            get => m_StrayedGlobalLUT == null ? editorResources.strayedResources.globalLUT : m_StrayedGlobalLUT;
+            get
+            {
+                #if UNITY_EDITOR
+                if (m_StrayedGlobalLUT == null)
+                    m_StrayedGlobalLUT = editorResources.strayedResources.globalLUT;
+                #endif
+
+                return m_StrayedGlobalLUT;
+            }
             set => m_StrayedGlobalLUT = value;
         }
 
