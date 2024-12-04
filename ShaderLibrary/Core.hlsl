@@ -30,30 +30,72 @@
 
 // STRAYED ADDITIONS
 // BUILT IN TONEMAPPING
+//#define DISABLE_STRAYED_TONEMAPPING
+
 #ifndef DISABLE_STRAYED_TONEMAPPING
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
-Texture2D _StrayedGlobalLUT;
-SamplerState sampler_StrayedGlobalLUT;
-half4 _StrayedGlobalLUT_Params;
+//Texture2D _StrayedGlobalLUT;
+//SamplerState sampler_StrayedGlobalLUT;
+#define STRAYED_TONEMAP_EXPOSURE 1.59107297
+#define STRAYED_EPSILON 1e-10
+#define STRAYED_KELVIN 5880
 
+half4 _StrayedGlobalLUT_Params;
 half4 _StrayedGlobalVignette;
 
+/*
 inline void StrayedApplyLUT(inout half4 color) {
     color.rgb = saturate(color.rgb);
     color.rgb = ApplyLut2D(TEXTURE2D_ARGS(_StrayedGlobalLUT, sampler_StrayedGlobalLUT), color.rgb, _StrayedGlobalLUT_Params);
 }
+*/
+
+half3 StrayedColorTemperatureToRGB(half temperatureInKelvins)
+{
+    half3 retColor;
+
+    temperatureInKelvins = clamp(temperatureInKelvins, 1000.0, 40000.0) / 100.0;
+
+    if (temperatureInKelvins <= 66.0)
+    {
+        retColor.r = 1.0;
+        retColor.g = saturate(0.39008157876901960784F * log(temperatureInKelvins) - 0.63184144378862745098F);
+    }
+    else
+    {
+        float t = temperatureInKelvins - 60.0;
+        retColor.r = saturate(1.29293618606274509804F * pow(t, -0.1332047592F));
+        retColor.g = saturate(1.12989086089529411765F * pow(t, -0.0755148492F));
+    }
+
+
+    if (temperatureInKelvins >= 66.0)
+        retColor.b = 1.0;
+    else if(temperatureInKelvins <= 19.0)
+        retColor.b = 0.0;
+    else
+        retColor.b = saturate(0.54320678911019607843F * log(temperatureInKelvins - 10.0F) - 1.19625408914F);
+
+    return retColor;
+}
 
 inline void StrayedApplyVignette(inout half4 color, in half vignetteFac) {
     // RGB is lerped to the vignette amount based on vignette alpha
-
     color.rgb = lerp(color.rgb, _StrayedGlobalVignette.rgb, vignetteFac * _StrayedGlobalVignette.a);
+}
+
+inline void StrayedApplyWhiteBalance(inout half4 color) {
+    //const half3 colorK = StrayedColorTemperatureToRGB(STRAYED_KELVIN);
+    const half3 colorK = half3(1, 0.9574063, 0.9155875); // Precomputed offline
+
+    color.rgb *= saturate(colorK) * STRAYED_TONEMAP_EXPOSURE;
 }
 
 #define STRAYED_COLOR_GRADING(col, vignette) \
     StrayedApplyVignette(col, vignette); \
-    StrayedApplyLUT(col);
+    StrayedApplyWhiteBalance(col);
 
 #else
 
