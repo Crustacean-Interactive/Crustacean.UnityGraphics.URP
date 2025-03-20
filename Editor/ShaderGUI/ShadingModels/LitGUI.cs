@@ -114,6 +114,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             public MaterialProperty clearCoatMask;
             public MaterialProperty clearCoatSmoothness;
 
+            public MaterialProperty smaBaseMap;
+            public MaterialProperty bakedBaseMap;
+
             public LitProperties(MaterialProperty[] properties)
             {
                 // Surface Option Props
@@ -142,6 +145,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
                 smaMap = BaseShaderGUI.FindProperty("_SMAMap", properties, false);
                 smaRMAFlip = BaseShaderGUI.FindProperty("_SMA_RMA_Flip", properties, false);
+
+                smaBaseMap = BaseShaderGUI.FindProperty("_SMABaseMap", properties, false);
+                bakedBaseMap = BaseShaderGUI.FindProperty("_BakedBaseMap", properties, false);
             }
         }
 
