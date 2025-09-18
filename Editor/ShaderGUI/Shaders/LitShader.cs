@@ -8,7 +8,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
     {
         static readonly string[] workflowModeNames = Enum.GetNames(typeof(LitGUI.WorkflowMode));
 
-        protected LitGUI.LitProperties litProperties;
+        private LitGUI.LitProperties litProperties;
         private LitDetailGUI.LitProperties litDetailProperties;
 
         public override void FillAdditionalFoldouts(MaterialHeaderScopeList materialScopesList)

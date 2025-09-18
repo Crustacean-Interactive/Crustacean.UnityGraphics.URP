@@ -19,15 +19,12 @@ namespace UnityEditor
 
         [Flags]
         [URPHelpURL("shaders-in-universalrp")]
-        protected enum Expandable : uint
+        protected enum Expandable
         {
             SurfaceOptions = 1 << 0,
             SurfaceInputs = 1 << 1,
             Advanced = 1 << 2,
             Details = 1 << 3,
-
-            PBRSurfaceInputs = 1 << 4,
-            BakedSurfaceInputs = 1 << 5,
         }
 
         public enum SurfaceType
@@ -82,12 +79,6 @@ namespace UnityEditor
             public static readonly GUIContent SurfaceInputs = EditorGUIUtility.TrTextContent("Surface Inputs",
                 "These settings describe the look and feel of the surface itself.");
 
-            public static readonly GUIContent PBRSurfaceInputs = EditorGUIUtility.TrTextContent("SMA Surface Inputs",
-                "These settings describe the look and feel of the surface itself on PBR supported targets.");
-
-            public static readonly GUIContent BakedSurfaceInputs = EditorGUIUtility.TrTextContent("Baked Surface Inputs",
-                "These settings describe the look and feel of the surface itself on Baked / Simple supported targets.");
-
             public static readonly GUIContent AdvancedLabel = EditorGUIUtility.TrTextContent("Advanced Options",
                 "These settings affect behind-the-scenes rendering and underlying calculations.");
 
@@ -120,13 +111,6 @@ namespace UnityEditor
 
             public static readonly GUIContent baseMap = EditorGUIUtility.TrTextContent("Base Map",
                 "Specifies the base Material and/or Color of the surface. If you’ve selected Transparent or Alpha Clipping under Surface Options, your Material uses the Texture’s alpha channel or color.");
-
-            public static readonly GUIContent smaBaseMap = EditorGUIUtility.TrTextContent("SMA Base Map",
-                "Specifies the base Material and/or Color of the surface. If you’ve selected Transparent or Alpha Clipping under Surface Options, your Material uses the Texture’s alpha channel or color.");
-
-            public static readonly GUIContent bakedBaseMap = EditorGUIUtility.TrTextContent("Baked Base Map",
-                "Specifies the base Material and/or Color of the surface. If you’ve selected Transparent or Alpha Clipping under Surface Options, your Material uses the Texture’s alpha channel or color.");
-
 
             public static readonly GUIContent emissionMap = EditorGUIUtility.TrTextContent("Emission Map",
                 "Determines the color and intensity of light that the surface of the material emits.");
@@ -257,7 +241,7 @@ namespace UnityEditor
             ShaderPropertiesGUI(material);
         }
 
-        protected virtual uint materialFilter => uint.MaxValue & (uint)~(Expandable.PBRSurfaceInputs | Expandable.BakedSurfaceInputs);
+        protected virtual uint materialFilter => uint.MaxValue;
 
         public virtual void OnOpenGUI(Material material, MaterialEditor materialEditor)
         {
@@ -269,12 +253,6 @@ namespace UnityEditor
 
             if (filter.HasFlag(Expandable.SurfaceInputs))
                 m_MaterialScopeList.RegisterHeaderScope(Styles.SurfaceInputs, (uint)Expandable.SurfaceInputs, DrawSurfaceInputs);
-
-            if (filter.HasFlag(Expandable.PBRSurfaceInputs))
-                m_MaterialScopeList.RegisterHeaderScope(Styles.PBRSurfaceInputs, (uint)Expandable.PBRSurfaceInputs, DrawPBRSurfaceInputs);
-
-            if (filter.HasFlag(Expandable.BakedSurfaceInputs))
-                m_MaterialScopeList.RegisterHeaderScope(Styles.BakedSurfaceInputs, (uint)Expandable.BakedSurfaceInputs, DrawBakedSurfaceInputs);
 
             if (filter.HasFlag(Expandable.Details))
                 FillAdditionalFoldouts(m_MaterialScopeList);
@@ -339,16 +317,6 @@ namespace UnityEditor
         public virtual void DrawSurfaceInputs(Material material)
         {
             DrawBaseProperties(material);
-        }
-
-        public virtual void DrawPBRSurfaceInputs(Material material)
-        {
-            // TODO: Do something?
-        }
-
-        public virtual void DrawBakedSurfaceInputs(Material material)
-        {
-            // TODO: Do something?
         }
 
         public virtual void DrawAdvancedOptions(Material material)
