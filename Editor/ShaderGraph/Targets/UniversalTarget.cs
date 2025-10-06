@@ -1182,6 +1182,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
                 result.Add(RenderState.Cull(RenderFaceToCull(target.renderFace)));
 
+                result.Add(RenderState.AlphaToMask(target.alphaClip ? "On" : "Off"));
+
                 if (target.surfaceType == SurfaceType.Opaque)
                 {
                     result.Add(RenderState.Blend(Blend.One, Blend.Zero));

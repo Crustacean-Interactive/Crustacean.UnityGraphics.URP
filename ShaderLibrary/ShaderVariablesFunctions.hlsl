@@ -152,14 +152,15 @@ void GetLeftHandedViewSpaceMatrices(out float4x4 viewMatrix, out float4x4 projMa
 void AlphaDiscard(real alpha, real cutoff, real offset = real(0.0))
 {
     #ifdef _ALPHATEST_ON
-    if (IsAlphaDiscardEnabled())
-        clip(alpha - cutoff + offset);
+    //if (IsAlphaDiscardEnabled())
+    //    clip(alpha - cutoff + offset);
     #endif
 }
 
 half OutputAlpha(half outputAlpha, half surfaceType = half(0.0))
 {
-    return surfaceType == 1 ? outputAlpha : half(1.0);
+    return outputAlpha;
+    //return surfaceType == 1 ? outputAlpha : half(1.0);
 }
 
 // A word on normalization of normals:

@@ -27,7 +27,7 @@ half Alpha(half albedoAlpha, half4 color, half cutoff)
 #endif
 
 #if defined(_ALPHATEST_ON)
-    clip(alpha - cutoff);
+    //clip(alpha - cutoff);
 #endif
 
     return alpha;

@@ -229,6 +229,10 @@ half4 LitPassFragment(Varyings input) : SV_Target
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, _Surface);
 
+#ifdef _ALPHATEST_ON
+    color.a = (color.a - _Cutoff) / max(fwidth(color.a), 0.0001) + 0.5;
+#endif
+
     STRAYED_COLOR_GRADING(color, FAST_CLIP_VIGNETTE(inputData.normalizedScreenSpaceUV))
     return color;
 }

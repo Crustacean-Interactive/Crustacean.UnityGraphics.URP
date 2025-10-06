@@ -137,6 +137,10 @@ half4 UnlitPassFragment(Varyings input) : SV_Target
 
     finalColor.rgb = MixFog(finalColor.rgb, fogFactor);
 
+#ifdef _ALPHATEST_ON
+    finalColor.a = (finalColor.a - _Cutoff) / max(fwidth(finalColor.a), 0.0001) + 0.5;
+#endif
+
     STRAYED_COLOR_GRADING(finalColor, FALLBACK_VIGNETTE(input.positionCS))
     return finalColor;
 }

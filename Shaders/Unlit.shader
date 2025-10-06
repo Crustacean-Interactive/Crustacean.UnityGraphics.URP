@@ -33,6 +33,7 @@ Shader "Universal Render Pipeline/Unlit"
         Blend [_SrcBlend][_DstBlend]
         ZWrite [_ZWrite]
         Cull [_Cull]
+        AlphaToMask[_AlphaClip]
 
         Pass
         {
