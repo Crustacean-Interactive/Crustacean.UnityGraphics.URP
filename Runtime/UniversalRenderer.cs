@@ -161,6 +161,8 @@ namespace UnityEngine.Rendering.Universal
         internal RTHandle colorGradingLut { get => m_PostProcessPasses.colorGradingLut; }
         internal DeferredLights deferredLights { get => m_DeferredLights; }
 
+        private bool? m_wasUseRenderPassEnabled = null;
+
         /// <summary>
         /// Constructor for the Universal Renderer.
         /// </summary>
@@ -550,8 +552,13 @@ namespace UnityEngine.Rendering.Universal
                 }
             }
 
-            if (cameraData.cameraType != CameraType.Game)
+            // CRUSTACEAN: Unity or Meta errata - Breaks subsequent views if realtime probes are present
+            m_wasUseRenderPassEnabled ??= useRenderPassEnabled;
+            if (cameraData.cameraType != CameraType.Game) {
                 useRenderPassEnabled = false;
+            } else {
+                useRenderPassEnabled = m_wasUseRenderPassEnabled ?? useRenderPassEnabled;
+            }
 
             // Because of the shortcutting done by depth only offscreen cameras, useDepthPriming must be computed early
             useDepthPriming = IsDepthPrimingEnabled(ref cameraData);
@@ -1305,7 +1312,7 @@ namespace UnityEngine.Rendering.Universal
                 // Turning off unnecessary NRP in Editor because of MSAA mistmatch between CameraTargetDescriptor vs camera backbuffer
                 // NRP layer considers this being a pass with MSAA samples by checking CameraTargetDescriptor taken from RP asset
                 // while the camera backbuffer has a single sample
-                m_FinalDepthCopyPass.useNativeRenderPass = false; 
+                m_FinalDepthCopyPass.useNativeRenderPass = false;
                 EnqueuePass(m_FinalDepthCopyPass);
             }
 #endif
