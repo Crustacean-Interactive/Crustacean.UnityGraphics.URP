@@ -326,17 +326,9 @@ namespace UnityEngine.Rendering.Universal
 
         public bool CanRunOnTile()
         {
-            // Check builtin & user effects here
-#if ENABLE_VR && ENABLE_XR_MODULE && !UNITY_EDITOR
-            // These effects has isTileCompatible => false
-            if(m_Bloom.IsActive() || m_ChromaticAberration.IsActive() || m_DepthOfField.IsActive() || m_LensDistortion.IsActive() || m_MotionBlur.IsActive() || m_PaniniProjection.IsActive()) {
-                return false;
-            } else {
-                return true;
-            }
-#else
-            return false;
-#endif
+            return useNativeRenderPass && !(m_Bloom.IsActive() || m_ChromaticAberration.IsActive() ||
+                                           m_DepthOfField.IsActive() || m_LensDistortion.IsActive() ||
+                                           m_MotionBlur.IsActive() || m_PaniniProjection.IsActive());
         }
 
         /// <inheritdoc/>
@@ -359,6 +351,8 @@ namespace UnityEngine.Rendering.Universal
             m_UseFastSRGBLinearConversion = renderingData.postProcessingData.useFastSRGBLinearConversion;
             m_SupportDataDrivenLensFlare = renderingData.postProcessingData.supportDataDrivenLensFlare;
 
+            isNativeRenderPass = useNativeRenderPass;
+
             var cmd = renderingData.commandBuffer;
             if (m_IsFinalPass)
             {
@@ -373,7 +367,7 @@ namespace UnityEngine.Rendering.Universal
                 // Note: we can still work on-tile if FXAA is enabled, it'd be part of the final pass
                 RenderNativeRenderPass(context, ref renderingData);
             }
-            else
+            else if (!CanRunOnTile() && !useNativeRenderPass)
             {
                 // Regular render path (not on-tile) - we do everything in a single command buffer as it
                 // makes it easier to manage temporary targets' lifetime
@@ -381,6 +375,10 @@ namespace UnityEngine.Rendering.Universal
                 {
                     Render(cmd, ref renderingData);
                 }
+            }
+            else
+            {
+                Debug.LogWarning("Unsupported post-processing configuration. Tile incompatible effects were likely enabled with native rendering pass support!");
             }
         }
 
@@ -756,7 +754,7 @@ namespace UnityEngine.Rendering.Universal
                         RTHandleStaticHelpers.SetRTHandleStaticWrapper(cameraTarget);
                         var cameraTargetHandle = RTHandleStaticHelpers.s_RTHandleWrapper;
 
-                        RenderingUtils.FinalBlit(cmd, ref cameraData, GetSource(), cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, m_Materials.uber, 0);
+                        RenderingUtils.FinalBlit(cmd, ref cameraData, GetSource(), cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, m_Materials.uber, 0, isNativeRenderPass);
                         renderer.ConfigureCameraColorTarget(cameraTargetHandle);
                     }
                 }
@@ -1682,7 +1680,7 @@ namespace UnityEngine.Rendering.Universal
                 // Get RTHandle alias to use RTHandle apis
                 RTHandleStaticHelpers.SetRTHandleStaticWrapper(cameraTarget);
                 var cameraTargetHandle = RTHandleStaticHelpers.s_RTHandleWrapper;
-                RenderingUtils.FinalBlit(cmd, ref cameraData, sourceTex, cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, material, 0);
+                RenderingUtils.FinalBlit(cmd, ref cameraData, sourceTex, cameraTargetHandle, colorLoadAction, RenderBufferStoreAction.Store, material, 0, isNativeRenderPass);
             }
         }
 
