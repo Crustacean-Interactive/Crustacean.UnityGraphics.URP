@@ -1428,6 +1428,7 @@ namespace UnityEngine.Rendering.Universal
             cmd.DisableShaderKeyword(ShaderKeywordStrings.AdditionalLightShadows);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.ReflectionProbeBlending);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.ReflectionProbeBoxProjection);
+            cmd.DisableShaderKeyword(ShaderKeywordStrings.ReflectionProbeAtlas);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.SoftShadows);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.SoftShadowsLow);
             cmd.DisableShaderKeyword(ShaderKeywordStrings.SoftShadowsMedium);
