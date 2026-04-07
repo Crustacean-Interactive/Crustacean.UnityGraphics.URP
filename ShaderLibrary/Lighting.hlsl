@@ -287,9 +287,26 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
 
     LightingData lightingData = CreateLightingData(inputData, surfaceData);
 
+#if defined(LIGHTMAP_ON) || defined(STRAYED_HYBRID_GI)
+    half3 srcGI = (inputData.bakedGI.rgb);
+    half3 gi = srcGI.rrr;
+
+    inputData.bakedGI = 0;
+    inputData.bakedGI += (gi * unity_AmbientSky);
+    inputData.bakedGI += (srcGI.ggg);
+
+    #if 0
+    inputData.bakedGI = 0;
+    gi = 1;
+    #endif
+#else
+    half3 gi = 1;
+#endif
+
     lightingData.giColor = GlobalIllumination(brdfData, brdfDataClearCoat, surfaceData.clearCoatMask,
                                               inputData.bakedGI, aoFactor.indirectAmbientOcclusion, inputData.positionWS,
                                               inputData.normalWS, inputData.viewDirectionWS, inputData.normalizedScreenSpaceUV);
+
 #ifdef _LIGHT_LAYERS
     if (IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
 #endif
@@ -297,7 +314,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
         lightingData.mainLightColor = LightingPhysicallyBased(brdfData, brdfDataClearCoat,
                                                               mainLight,
                                                               inputData.normalWS, inputData.viewDirectionWS,
-                                                              surfaceData.clearCoatMask, specularHighlightsOff);
+                                                              surfaceData.clearCoatMask, specularHighlightsOff) * gi;
     }
 
     #if defined(_ADDITIONAL_LIGHTS)
@@ -388,14 +405,30 @@ half4 UniversalFragmentBlinnPhong(InputData inputData, SurfaceData surfaceData)
 
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, aoFactor);
 
+#if defined(LIGHTMAP_ON) || defined(STRAYED_HYBRID_GI)
+    half3 srcGI = (inputData.bakedGI.rgb);
+    half3 gi = srcGI.rrr;
+
+    inputData.bakedGI = 0;
+    inputData.bakedGI += (gi * unity_AmbientSky);
+    inputData.bakedGI += (srcGI.ggg);
     inputData.bakedGI *= surfaceData.albedo;
+
+    #if 0
+    inputData.bakedGI = 0;
+    gi = 1;
+    #endif
+#else
+    half3 gi = 1;
+    inputData.bakedGI *= surfaceData.albedo;
+#endif
 
     LightingData lightingData = CreateLightingData(inputData, surfaceData);
 #ifdef _LIGHT_LAYERS
     if (IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
 #endif
     {
-        lightingData.mainLightColor += CalculateBlinnPhong(mainLight, inputData, surfaceData);
+        lightingData.mainLightColor += CalculateBlinnPhong(mainLight, inputData, surfaceData) * gi;
     }
 
     #if defined(_ADDITIONAL_LIGHTS)
