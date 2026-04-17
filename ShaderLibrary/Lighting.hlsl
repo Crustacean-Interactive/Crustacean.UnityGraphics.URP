@@ -293,7 +293,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
 
     inputData.bakedGI = 0;
     inputData.bakedGI += (gi * unity_AmbientSky);
-    inputData.bakedGI += (srcGI.ggg);
+    inputData.bakedGI += saturate(srcGI.ggg);
 
     #if 0
     inputData.bakedGI = 0;
@@ -411,7 +411,7 @@ half4 UniversalFragmentBlinnPhong(InputData inputData, SurfaceData surfaceData)
 
     inputData.bakedGI = 0;
     inputData.bakedGI += (gi * unity_AmbientSky);
-    inputData.bakedGI += (srcGI.ggg);
+    inputData.bakedGI += saturate(srcGI.ggg);
     inputData.bakedGI *= surfaceData.albedo;
 
     #if 0
