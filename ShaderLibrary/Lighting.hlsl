@@ -289,7 +289,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
 
     lightingData.giColor = GlobalIllumination(brdfData, brdfDataClearCoat, surfaceData.clearCoatMask,
                                               inputData.bakedGI, aoFactor.indirectAmbientOcclusion, inputData.positionWS,
-                                              inputData.normalWS, inputData.viewDirectionWS, inputData.normalizedScreenSpaceUV);
+                                              inputData.normalWS, inputData.viewDirectionWS, inputData.normalizedScreenSpaceUV, inputData.moonAtten);
 #ifdef _LIGHT_LAYERS
     if (IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
 #endif
@@ -297,7 +297,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
         lightingData.mainLightColor = LightingPhysicallyBased(brdfData, brdfDataClearCoat,
                                                               mainLight,
                                                               inputData.normalWS, inputData.viewDirectionWS,
-                                                              surfaceData.clearCoatMask, specularHighlightsOff);
+                                                              surfaceData.clearCoatMask, specularHighlightsOff) * inputData.moonAtten;
     }
 
     #if defined(_ADDITIONAL_LIGHTS)
@@ -395,7 +395,7 @@ half4 UniversalFragmentBlinnPhong(InputData inputData, SurfaceData surfaceData)
     if (IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
 #endif
     {
-        lightingData.mainLightColor += CalculateBlinnPhong(mainLight, inputData, surfaceData);
+        lightingData.mainLightColor += CalculateBlinnPhong(mainLight, inputData, surfaceData) * surfaceData.occlusion * inputData.moonAtten;
     }
 
     #if defined(_ADDITIONAL_LIGHTS)

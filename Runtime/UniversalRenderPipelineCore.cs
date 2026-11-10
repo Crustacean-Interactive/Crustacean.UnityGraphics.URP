@@ -1015,6 +1015,8 @@ namespace UnityEngine.Rendering.Universal
         public static readonly int overlayUITexture = Shader.PropertyToID("_OverlayUITexture");
         public static readonly int hdrOutputLuminanceParams = Shader.PropertyToID("_HDROutputLuminanceParams");
         public static readonly int hdrOutputGradingParams = Shader.PropertyToID("_HDROutputGradingParams");
+
+        public static readonly int moonAttenParams = Shader.PropertyToID("strayed_AttenParams");
     }
 
     /// <summary>

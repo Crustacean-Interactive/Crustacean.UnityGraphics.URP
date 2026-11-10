@@ -4,6 +4,7 @@ void InitializeInputData(Varyings input, SurfaceDescription surfaceDescription, 
     inputData = (InputData)0;
 
     inputData.positionWS = input.positionWS;
+    inputData.moonAtten = ComputeMoonAttenuation(input.positionWS);
 
     #ifdef _NORMALMAP
         // IMPORTANT! If we ever support Flip on double sided materials ensure bitangent and tangent are NOT flipped.

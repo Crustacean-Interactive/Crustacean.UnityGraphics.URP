@@ -20,6 +20,7 @@ void InitializeInputData(Varyings input, out InputData inputData)
     inputData.bakedGI = half3(0, 0, 0);
     inputData.normalizedScreenSpaceUV = 0;
     inputData.shadowMask = half4(1, 1, 1, 1);
+    inputData.moonAtten = ComputeMoonAttenuation(input.positionWS);
 }
 
 PackedVaryings vert(Attributes input)

@@ -71,6 +71,7 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
     viewDirWS = SafeNormalize(viewDirWS);
 
     inputData.viewDirectionWS = viewDirWS;
+    inputData.moonAtten = ComputeMoonAttenuation(input.positionWS);
 
     #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
         inputData.shadowCoord = input.shadowCoord;

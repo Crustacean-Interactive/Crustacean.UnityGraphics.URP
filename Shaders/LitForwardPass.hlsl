@@ -87,6 +87,8 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
     inputData.normalWS = input.normalWS;
 #endif
 
+    inputData.moonAtten = ComputeMoonAttenuation(input.positionWS);
+
     inputData.normalWS = NormalizeNormalPerPixel(inputData.normalWS);
     inputData.viewDirectionWS = viewDirWS;
 

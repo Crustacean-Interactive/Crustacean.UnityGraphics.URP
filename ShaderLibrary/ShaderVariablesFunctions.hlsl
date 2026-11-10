@@ -333,10 +333,29 @@ real ComputeFogFactor(float zPositionCS)
 }
 
 // Strayed Additions
+real ComputeFogFactorRadial(float3 positionWS, out float dist)
+{
+    dist = distance(positionWS, _WorldSpaceCameraPos.xyz);
+    return ComputeFogFactorZ0ToFar(dist); // ik this isn't accurate but at least it's 'close enough' for strayed's purposes
+}
+
 real ComputeFogFactorRadial(float3 positionWS)
 {
     float dist = distance(positionWS, _WorldSpaceCameraPos.xyz);
     return ComputeFogFactorZ0ToFar(dist); // ik this isn't accurate but at least it's 'close enough' for strayed's purposes
+}
+
+real ComputeMoonAttenuation(float3 positionWS)
+{
+    float z = distance(positionWS, _WorldSpaceCameraPos.xyz);
+    float fogFactor = saturate((z - strayed_AttenParams.y) / strayed_AttenParams.x);
+    return 1.0F - real(fogFactor);
+}
+
+real ComputeMoonAttenuationZ(float z)
+{
+    float fogFactor = saturate((z - strayed_AttenParams.y) / strayed_AttenParams.x);
+    return 1.0F - real(fogFactor);
 }
 // -----------------
 

@@ -50,6 +50,7 @@ struct InputData
     float2  normalizedScreenSpaceUV;
     half4   shadowMask;
     half3x3 tangentToWorld;
+    half    moonAtten;
 
     #if defined(DEBUG_DISPLAY)
     half2   dynamicLightmapUV;
@@ -113,6 +114,11 @@ half4 _AdditionalLightsCount;
 
 uint _RenderingLayerMaxInt;
 float _RenderingLayerRcpMaxInt;
+
+// Strayed additions
+// x = end - start, y = start
+half4 strayed_AttenParams;
+// -----------------
 
 // Screen coord override.
 float4 _ScreenCoordScaleBias;

@@ -560,6 +560,12 @@ namespace UnityEngine.Rendering.Universal
 
         [SerializeField] TextureResources m_Textures;
 
+        [SerializeField] Vector4 m_strayedAttenParams = new Vector4(100000, 100000, 0, 0);
+
+        public Vector4? StrayedAttenParamsOverride;
+
+        public Vector4 StrayedAttenParams => StrayedAttenParamsOverride ?? m_strayedAttenParams;
+
         // Note: A lut size of 16^3 is barely usable with the HDR grading mode. 32 should be the
         // minimum, the lut being encoded in log. Lower sizes would work better with an additional
         // 1D shaper lut but for now we'll keep it simple.
@@ -1467,7 +1473,7 @@ namespace UnityEngine.Rendering.Universal
         {
             get { return m_UseFastSRGBLinearConversion; }
         }
-        
+
         /// <summary>
         /// Returns true if Data Driven Lens Flare are supported by this asset, false otherwise.
         /// </summary>

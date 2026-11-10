@@ -216,6 +216,8 @@ namespace UnityEditor.Rendering.Universal
             EditorGUILayout.PropertyField(serialized.mainLightShadowmapResolutionProp, Styles.mainLightShadowmapResolutionText);
             EditorGUI.EndDisabledGroup();
 
+            EditorGUILayout.PropertyField(serialized.strayedAttenParams, Styles.strayedAttenParams);
+
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 

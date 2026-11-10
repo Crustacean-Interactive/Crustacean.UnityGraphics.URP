@@ -10,6 +10,7 @@ using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Profiling;
+using System.Numerics;
 
 namespace UnityEngine.Rendering.Universal
 {
@@ -507,7 +508,7 @@ namespace UnityEngine.Rendering.Universal
                         }
                     }
                 }
-                
+
 
                 if(temporaryRT)
                 {
@@ -897,7 +898,7 @@ namespace UnityEngine.Rendering.Universal
                             CameraData overlayCameraData = baseCameraData;
                             overlayCameraData.camera = currCamera;
                             overlayCameraData.baseCamera = baseCamera;
-                            
+
                             UpdateCameraStereoMatrices(currAdditionalCameraData.camera, xrPass);
 
                             using (new ProfilingScope(null, Profiling.Pipeline.beginCameraRendering))
@@ -912,7 +913,7 @@ namespace UnityEngine.Rendering.Universal
 
                             bool lastCamera = i == lastActiveOverlayCameraIndex;
                             InitializeAdditionalCameraData(currCamera, currAdditionalCameraData, lastCamera, ref overlayCameraData);
-                            
+
                             overlayCameraData.stackAnyPostProcessingEnabled = anyPostProcessingEnabled;
                             overlayCameraData.stackLastCameraOutputToHDR = finalOutputHDR;
 
@@ -1675,6 +1676,11 @@ namespace UnityEngine.Rendering.Universal
                 Shader.SetGlobalFloat(ShaderPropertyId.ditheringTextureInvSize, 1.0f / asset.textures.blueNoise64LTex.width);
                 Shader.SetGlobalTexture(ShaderPropertyId.ditheringTexture, asset.textures.blueNoise64LTex);
             }
+
+            if (Application.isPlaying)
+                Shader.SetGlobalVector(ShaderPropertyId.moonAttenParams, asset.StrayedAttenParams);
+            else
+                Shader.SetGlobalVector(ShaderPropertyId.moonAttenParams, new Vector4(100000, 100000, 0, 0));
         }
 
         static void SetupPerCameraShaderConstants(CommandBuffer cmd)

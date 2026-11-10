@@ -26,9 +26,9 @@ struct Varyings
     float2 uv : TEXCOORD0;
     float fogCoord : TEXCOORD1;
     float4 positionCS : SV_POSITION;
+    float3 positionWS : TEXCOORD2;
 
     #if defined(DEBUG_DISPLAY)
-    float3 positionWS : TEXCOORD2;
     float3 normalWS : TEXCOORD3;
     float3 viewDirWS : TEXCOORD4;
     #endif
@@ -56,6 +56,7 @@ void InitializeInputData(Varyings input, out InputData inputData)
     inputData.bakedGI = half3(0, 0, 0);
     inputData.normalizedScreenSpaceUV = 0;
     inputData.shadowMask = half4(1, 1, 1, 1);
+    inputData.moonAtten = ComputeMoonAttenuation(input.positionWS);
 }
 
 Varyings UnlitPassVertex(Attributes input)
@@ -87,6 +88,8 @@ Varyings UnlitPassVertex(Attributes input)
     output.positionWS = vertexInput.positionWS;
     output.normalWS = normalInput.normalWS;
     output.viewDirWS = viewDirWS;
+    #else
+    output.positionWS = vertexInput.positionWS;
     #endif
 
     return output;
