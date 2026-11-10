@@ -87,7 +87,7 @@ Varyings BakedLitForwardPassVertex(Attributes input)
     #if defined(_FOG_FRAGMENT)
     output.uv0AndFogCoord.z = vertexInput.positionVS.z;
     #else
-    output.uv0AndFogCoord.z = ComputeFogFactor(vertexInput.positionCS.z);
+    output.uv0AndFogCoord.z = ComputeFogFactorRadial(vertexInput.positionWS);
     #endif
 
     // normalWS and tangentWS already normalize.

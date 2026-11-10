@@ -128,7 +128,7 @@ Varyings LitPassVertexSimple(Attributes input)
 #if defined(_FOG_FRAGMENT)
         half fogFactor = 0;
 #else
-        half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+        half fogFactor = ComputeFogFactorRadial(vertexInput.positionWS);
 #endif
 
     output.uv = TRANSFORM_TEX(input.texcoord, _BaseMap);

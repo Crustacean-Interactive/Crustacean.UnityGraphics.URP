@@ -73,7 +73,7 @@ Varyings UnlitPassVertex(Attributes input)
     #if defined(_FOG_FRAGMENT)
     output.fogCoord = vertexInput.positionVS.z;
     #else
-    output.fogCoord = ComputeFogFactor(vertexInput.positionCS.z);
+    output.fogCoord = ComputeFogFactorRadial(vertexInput.positionWS);
     #endif
 
     #if defined(DEBUG_DISPLAY)

@@ -332,6 +332,14 @@ real ComputeFogFactor(float zPositionCS)
     return ComputeFogFactorZ0ToFar(clipZ_0Far);
 }
 
+// Strayed Additions
+real ComputeFogFactorRadial(float3 positionWS)
+{
+    float dist = distance(positionWS, _WorldSpaceCameraPos.xyz);
+    return ComputeFogFactorZ0ToFar(dist); // ik this isn't accurate but at least it's 'close enough' for strayed's purposes
+}
+// -----------------
+
 half ComputeFogIntensity(half fogFactor)
 {
     half fogIntensity = half(0.0);
@@ -358,11 +366,7 @@ real InitializeInputDataFog(float4 positionWS, real vertFogFactor)
     real fogFactor = 0.0;
 #if defined(_FOG_FRAGMENT)
     #if (defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2))
-        // Compiler eliminates unused math --> matrix.column_z * vec
-        float viewZ = -(mul(UNITY_MATRIX_V, positionWS).z);
-        // View Z is 0 at camera pos, remap 0 to near plane.
-        float nearToFarZ = max(viewZ - _ProjectionParams.y, 0);
-        fogFactor = ComputeFogFactorZ0ToFar(nearToFarZ);
+        fogFactor = ComputeFogFactorRadial(positionWS);
     #endif
 #else
     fogFactor = vertFogFactor;
